@@ -1,0 +1,37 @@
+name: Download Model from Kaggle
+
+on: [push]  # ou "workflow_dispatch" pour déclencher manuellement
+
+jobs:
+  download-kaggle-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'  # ou la version que vous voulez
+
+      - name: Install Kaggle CLI
+        run: |
+          pip install kaggle
+          
+      - name: Configure Kaggle API
+        run: |
+          # 1) On crée le dossier .kaggle dans le HOME
+          mkdir -p ~/.kaggle
+          # 2) On récupère notre secret KAGGLE_TOKEN et on l'écrit dans le fichier kaggle.json
+          echo "${{ secrets.KAGGLE_TOKEN }}" > ~/.kaggle/kaggle.json
+          # 3) On restreint les permissions sur le fichier (sinon Kaggle CLI se plaint)
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Download kernel output
+        run: |
+          # Remplacez "username/kernel-name" par l'identifiant de votre Kernel Kaggle
+          kaggle kernels output username/kernel-name -p ./kaggle_output
+
+      - name: List downloaded files
+        run: ls -R kaggle_output
